@@ -1,5 +1,6 @@
 """Generate report-ready evaluation plots for the MARL scheduling project."""
 
+import json
 from pathlib import Path
 
 import matplotlib
@@ -165,7 +166,100 @@ def generate_reward_tradeoff_plot():
     print(f"Saved reward plot to {out_path}")
 
 
+def generate_cloud_dataset_metrics_plot():
+    metrics_path = (
+        Path(__file__).resolve().parent
+        / "results"
+        / "cloud_dataset_training_metrics.json"
+    )
+    with metrics_path.open("r", encoding="utf-8") as source:
+        metrics = json.load(source)
+
+    regression = metrics["regression"]
+    names = list(regression)
+    improvements = [
+        regression[name]["mae_improvement_vs_mean_baseline_fraction"] * 100
+        for name in names
+    ]
+    labels = [
+        "Execution time",
+        "CPU utilization",
+        "CPU allocation",
+        "RAM allocated",
+        "RAM used",
+    ]
+
+    fig, (mae_ax, gpu_ax) = plt.subplots(
+        2,
+        1,
+        figsize=(12, 9),
+        gridspec_kw={"height_ratios": [1.4, 1]},
+    )
+    fig.suptitle(
+        "Cloud Dataset Gradient Boosting: Chronological Holdout",
+        fontsize=16,
+    )
+
+    colors = ["#59a14f" if value >= 0 else "#e15759" for value in improvements]
+    bars = mae_ax.bar(labels, improvements, color=colors)
+    mae_ax.axhline(0, color="black", linewidth=0.8)
+    mae_ax.set_ylabel("MAE improvement vs mean baseline (%)")
+    mae_ax.set_title("Regression targets (positive is better than baseline)")
+    mae_ax.grid(True, axis="y", linestyle="--", alpha=0.3)
+    mae_ax.tick_params(axis="x", rotation=15)
+    mae_ax.set_ylim(min(-1.0, min(improvements) - 0.5), max(2.0, max(improvements) + 0.5))
+    for bar, value in zip(bars, improvements):
+        offset = 0.08 if value >= 0 else -0.08
+        mae_ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            value + offset,
+            f"{value:.2f}%",
+            ha="center",
+            va="bottom" if value >= 0 else "top",
+        )
+
+    gpu = metrics["gpu_pseudo_label_classifier"]
+    gpu_labels = ["Accuracy", "Balanced accuracy"]
+    model_scores = [
+        gpu["test_accuracy"],
+        gpu["test_balanced_accuracy"],
+    ]
+    baseline_scores = [
+        gpu["always_zero_baseline_accuracy"],
+        gpu["always_zero_baseline_balanced_accuracy"],
+    ]
+    positions = np.arange(len(gpu_labels))
+    width = 0.36
+    gpu_ax.bar(
+        positions - width / 2,
+        model_scores,
+        width,
+        label="Classifier",
+        color="#4e79a7",
+    )
+    gpu_ax.bar(
+        positions + width / 2,
+        baseline_scores,
+        width,
+        label="Always-zero baseline",
+        color="#bab0ab",
+    )
+    gpu_ax.set_xticks(positions, gpu_labels)
+    gpu_ax.set_ylim(0, 1.05)
+    gpu_ax.set_ylabel("Score")
+    gpu_ax.set_title("GPU heuristic pseudo-label (not measured GPU need)")
+    gpu_ax.legend()
+    gpu_ax.grid(True, axis="y", linestyle="--", alpha=0.3)
+
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    out_path = OUTPUT_DIR / "cloud_dataset_gradient_boosting_metrics.png"
+    fig.savefig(out_path, dpi=200)
+    plt.close(fig)
+    print(f"Saved cloud dataset metrics plot to {out_path}")
+
+
 if __name__ == "__main__":
     generate_validation_scatter()
     generate_reward_tradeoff_plot()
+    generate_cloud_dataset_metrics_plot()
     print(f"All plots stored in: {OUTPUT_DIR}")

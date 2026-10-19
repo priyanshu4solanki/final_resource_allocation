@@ -1,0 +1,109 @@
+{
+  "input_dataset": "Cloud_Model_Dataset_cleaned.csv",
+  "row_count": 5000,
+  "train_rows": 4000,
+  "test_rows": 1000,
+  "split_method": "chronological 80/20 split by task_start_time",
+  "train_time_range": [
+    "2024-01-01T00:00:00",
+    "2024-01-03T18:39:00"
+  ],
+  "test_time_range": [
+    "2024-01-03T18:40:00",
+    "2024-01-04T11:19:00"
+  ],
+  "input_features": [
+    "data_source",
+    "task_type",
+    "job_priority",
+    "predicted_load_condition",
+    "number_of_active_users"
+  ],
+  "excluded_post_execution_or_leakage_columns": [
+    "task_size_proxy_mb",
+    "observed_network_bandwidth_utilization_mbps",
+    "target_execution_time_sec",
+    "target_cpu_utilization_pct",
+    "target_cpu_allocation_pct",
+    "target_ram_allocated_mb",
+    "target_ram_used_mb",
+    "target_waiting_time_ms",
+    "actual_host_id",
+    "predicted_host_id",
+    "host_selection_correct"
+  ],
+  "regression": {
+    "execution_time_sec": {
+      "target_column": "target_execution_time_sec",
+      "unit": "seconds",
+      "test_mae": 1.2457328332811792,
+      "test_rmse": 1.438333521126572,
+      "test_r2": -0.004874345330786234,
+      "mean_baseline_mae": 1.242026956,
+      "mae_improvement_vs_mean_baseline_fraction": -0.0029837333749296313
+    },
+    "cpu_utilization_pct": {
+      "target_column": "target_cpu_utilization_pct",
+      "unit": "percent",
+      "test_mae": 19.952317274468683,
+      "test_rmse": 23.01353385115277,
+      "test_r2": -0.007025379107922225,
+      "mean_baseline_mae": 19.92585222,
+      "mae_improvement_vs_mean_baseline_fraction": -0.0013281767914608
+    },
+    "cpu_allocation_pct": {
+      "target_column": "target_cpu_allocation_pct",
+      "unit": "percent of unknown host/VM capacity",
+      "test_mae": 22.446790048029534,
+      "test_rmse": 26.0275226121476,
+      "test_r2": -0.006384425396848803,
+      "mean_baseline_mae": 22.395969100000002,
+      "mae_improvement_vs_mean_baseline_fraction": -0.002269200667433191
+    },
+    "ram_allocated_mb": {
+      "target_column": "target_ram_allocated_mb",
+      "unit": "MB; Memory_Share * VM_Total_Memory_Capacity",
+      "test_mae": 6353.319047433357,
+      "test_rmse": 8034.039980088834,
+      "test_r2": -0.018879356543828996,
+      "mean_baseline_mae": 6444.2899800064,
+      "mae_improvement_vs_mean_baseline_fraction": 0.014116517545809226
+    },
+    "ram_used_mb": {
+      "target_column": "target_ram_used_mb",
+      "unit": "MB; observed Memory_Consumption",
+      "test_mae": 1807.3647432564549,
+      "test_rmse": 2098.8585043554367,
+      "test_r2": -0.008364518464950566,
+      "mean_baseline_mae": 1799.674928,
+      "mae_improvement_vs_mean_baseline_fraction": -0.004272891252088851
+    }
+  },
+  "gpu_pseudo_label_classifier": {
+    "target_column": "gpu_required_pseudo_label",
+    "label_provenance": "synthetic heuristic; not measured GPU need",
+    "test_positive_fraction": 0.067,
+    "test_accuracy": 0.933,
+    "test_balanced_accuracy": 0.5,
+    "test_precision_positive": 0.0,
+    "test_recall_positive": 0.0,
+    "test_f1_positive": 0.0,
+    "always_zero_baseline_accuracy": 0.933,
+    "always_zero_baseline_balanced_accuracy": 0.5,
+    "deployment_usable": false
+  },
+  "limitations": [
+    "The dataset does not contain true task file size or measured GPU use.",
+    "Memory consumption and CPU usage are outcomes; they are targets, not inputs.",
+    "RAM allocation is derived from Memory_Share and VM capacity; it is not equivalent to memory consumed.",
+    "CPU percent and CPU-share labels lack host core-count and precise allocation semantics, so they cannot be mapped directly to scheduler CPU units.",
+    "GPU classification only learns the synthetic heuristic label and is not suitable for live GPU placement.",
+    "Models use the dataset's features and target units and are not wired into the current live hub feature contract.",
+    "Dataset provenance and whether values are real measurements should be verified before operational use."
+  ],
+  "versions": {
+    "python": "3.11.4",
+    "scikit_learn": "1.9.1",
+    "numpy": "2.4.6"
+  }
+}

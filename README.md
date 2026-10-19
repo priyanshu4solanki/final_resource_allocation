@@ -3,6 +3,11 @@
 An end-to-end research project for task resource prediction, dependency-aware
 graph encoding, multi-agent scheduling, and folder-driven task execution.
 
+For the architecture overview, see [PROJECT_GUIDE.md](./PROJECT_GUIDE.md). For
+the complete technical explanation, including feature schemas, training
+methods, checkpoints, results, and limitations, see
+[SYSTEM_TECHNICAL_GUIDE.md](./SYSTEM_TECHNICAL_GUIDE.md).
+
 ## What's included
 
 - A FastAPI hub, telemetry agent, and worker for coordinating Python tasks.
@@ -10,10 +15,42 @@ graph encoding, multi-agent scheduling, and folder-driven task execution.
 - Predictor, graph encoder, and scheduler checkpoints used by the live hub.
 - Final MAPPO evaluation data, training history, and plots in
   `results/mappo_reference_1000/`.
+- A separate cloud-dataset Gradient Boosting artifact and chronological
+  holdout metrics in `results/` (not compatible with the live hub predictor).
 - The cleaned cloud-task dataset and metadata, plus reproducible synthetic GNN
   training data.
 - Unit and integration tests, and scripts for dataset preparation, training,
   and report-graph generation.
+
+## Final model and result files
+
+- `models/task_predictor.joblib`: four Gradient Boosting regressors used by
+  the live pipeline.
+- `models/task_gnn.pt`: GNN encoder/refinement checkpoint used by the live
+  pipeline.
+- `models/marl_scheduler.pt`: original PPO scheduler checkpoint.
+- `results/mappo_reference_1000/mappo_scheduler.pt`: trained 1,000-episode
+  MAPPO checkpoint used by the hub by default.
+- `results/mappo_reference_1000/`: MAPPO configuration, held-out evaluation,
+  training log/history, and training/evaluation plots.
+- `results/cloud_dataset_models.joblib` and
+  `results/cloud_dataset_training_metrics.json`: separate cloud dataset
+  Gradient Boosting outputs and held-out results.
+- `report_graphs/`: GNN-vs-predictor synthetic validation graph, adaptive
+  reward trade-off graph, and cloud dataset Gradient Boosting evaluation
+  graph.
+
+The cloud-dataset model has different features and target units from the live
+predictor. Its GPU classifier learns a heuristic pseudo-label and does not
+measure GPU need. See the technical guide and metrics JSON before interpreting
+those results.
+
+To reproduce the separate cloud-dataset experiment and regenerate its metrics:
+
+```powershell
+python train_cloud_dataset.py --input Cloud_Model_Dataset_cleaned.csv --artifact results/cloud_dataset_models.joblib --metrics results/cloud_dataset_training_metrics.json
+python generate_report_graphs.py
+```
 
 ## Setup and tests
 

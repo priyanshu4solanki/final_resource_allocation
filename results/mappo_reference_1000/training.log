@@ -1,0 +1,10 @@
+Training episodes: 1000
+Final training reward: 0.499989
+Held-out evaluation means:
+Untrained MAPPO: reward=-0.190499, completion=1.0000, rejection=0.0000, SLA_violations=0.0250, latency=1.9993, energy_proxy=1203.9909
+Baseline random: reward=0.008548, completion=0.8875, rejection=0.1125, SLA_violations=0.0277, latency=2.1090, energy_proxy=759.8056
+Baseline cheapest: reward=0.393038, completion=1.0000, rejection=0.0000, SLA_violations=0.0312, latency=2.0565, energy_proxy=601.8947
+Baseline fastest: reward=0.488363, completion=1.0000, rejection=0.0000, SLA_violations=0.0000, latency=1.9771, energy_proxy=1257.6994
+Trained MAPPO: reward=0.486828, completion=1.0000, rejection=0.0000, SLA_violations=0.0000, latency=1.9771, energy_proxy=1265.3392
+Trained-vs-untrained reward delta: 0.677326
+Trained-vs-fastest reward delta: -0.001535

@@ -5,6 +5,7 @@ __pycache__/
 .env.*
 !.env.example
 *.log
+!results/mappo_reference_1000/training.log
 cluster_task/
 cluster_result/
 cluster_tasks/
